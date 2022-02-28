@@ -75,16 +75,10 @@ class QuerySetMixin:
                 if perm in authz_res.scopes:
                     ids.add(authz_res.rsname.split(":").pop())
 
-        logger.info("List of portfolio ids with read access")
-        logger.info(ids)
         return ids
 
     def _check_parent_permission(self, model, field, parent_id):
-        # Get the Parent object
-        logger.info("Check Parent Permission")
-        logger.info(field)
-        logger.info(parent_id)
-
+        # Check if we have access to the parent object
         parent_model = model._meta.get_field(field).related_model
         parent_obj = get_object_or_404(parent_model, pk=parent_id)
         permission_object = getattr(parent_model, "PERMISSION_OBJECT", None)
@@ -93,9 +87,6 @@ class QuerySetMixin:
             parent_model = parent_obj.__class__
 
         perm = f"{parent_model._meta.app_label}.view_{parent_model._meta.model_name}"
-        logger.info(perm)
-        perms = self.request.user.get_all_permissions(parent_obj)
-        logger.info(perms)
 
         if not self.request.user.has_perm(perm, parent_obj):
             logger.warning("No access to parent object")
