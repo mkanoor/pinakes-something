@@ -1,5 +1,4 @@
 """PortfolioPermission Module"""
-import json
 import logging
 from rest_framework.exceptions import MethodNotAllowed
 from rest_framework.permissions import DjangoModelPermissions
@@ -9,6 +8,7 @@ logger = logging.getLogger("catalog")
 
 
 class PortfolioPermissions(DjangoModelPermissions):
+    """PortfolioPermission Class"""
     perms_map = {
         "list": ["%(app_label)s.view_%(model_name)s"],
         "retrieve": ["%(app_label)s.view_%(model_name)s"],
@@ -74,6 +74,7 @@ class PortfolioPermissions(DjangoModelPermissions):
 
 
 class PortfolioItemPermissions(DjangoModelPermissions):
+    """PortfolioItemPermissions class models permissions for portfolio item"""
     perms_map = {
         "list": ["%(app_label)s.view_%(model_name)s"],
         "retrieve": ["%(app_label)s.view_%(model_name)s"],
@@ -120,31 +121,23 @@ class PortfolioItemPermissions(DjangoModelPermissions):
         request.user.get_all_permissions()
 
         if view.action == "create":
-            logger.info(request.data)
             if "portfolio" in request.data:
                 obj = Portfolio.objects.get(pk=request.data["portfolio"])
-                logger.info(obj)
                 return request.user.has_perm(perms[0], obj)
 
         return True
 
     def has_object_permission(self, request, view, obj):
         """Check a single objects permission"""
-        model_cls = Portfolio
+        permission_object = obj.portfolio
         _clear_perm_cache(request.user)
-        logger.info("Get single object permission")
-        logger.info(obj.portfolio.name)
-        kperms = request.user.get_all_permissions(obj.portfolio)
-        logger.info(kperms)
+        perms = self.get_required_object_permissions(view.action, permission_object.__class__)
+        return request.user.has_perm(perms[0], permission_object)
 
-        logger.info("Required object permission")
-        perms = self.get_required_object_permissions(view.action, model_cls)
-        logger.info(perms)
-
-        return request.user.has_perm(perms[0], obj.portfolio)
 
 class ServicePlanPermissions(DjangoModelPermissions):
     """ServicePlanPermission is controlled by the Portfolio Object"""
+
     perms_map = {
         "retrieve": ["%(app_label)s.view_%(model_name)s"],
         "reset": ["%(app_label)s.change_%(model_name)s"],
@@ -176,17 +169,11 @@ class ServicePlanPermissions(DjangoModelPermissions):
 
     def has_object_permission(self, request, view, obj):
         """Check a single objects permission"""
-        model_cls = Portfolio
-        portfolio = obj.portfolio_item.portfolio
+        permission_object = obj.portfolio_item.portfolio
         _clear_perm_cache(request.user)
-        kperms =request.user.get_all_permissions(portfolio)
-        logger.info("Service Plan")
-        logger.info(kperms)
 
-        perms = self.get_required_object_permissions(view.action, model_cls)
-        logger.info("Required Service Plan")
-        logger.info(perms)
-        return request.user.has_perm(perms[0], portfolio)
+        perms = self.get_required_object_permissions(view.action, permission_object.__class__)
+        return request.user.has_perm(perms[0], permission_object)
 
 
 def _clear_perm_cache(user):

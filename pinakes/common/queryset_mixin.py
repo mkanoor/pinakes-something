@@ -1,6 +1,8 @@
 """provides a common implementation of get_queryset method in viewset"""
 import logging
 from django.http import Http404
+from django.shortcuts import get_object_or_404
+from rest_framework.exceptions import PermissionDenied
 
 from pinakes.main.models import Tenant
 
@@ -34,6 +36,11 @@ class QuerySetMixin:
             parent_lookup_key = f"{parent_field_name}_id"
             if parent_lookup_key in self.kwargs:
                 try:
+                    self._check_parent_permission(
+                        model_cls,
+                        parent_field_name,
+                        self.kwargs[parent_lookup_key],
+                    )
                     queryset = queryset.filter(
                         **{parent_field_name: self.kwargs[parent_lookup_key]}
                     )
@@ -71,3 +78,25 @@ class QuerySetMixin:
         logger.info("List of portfolio ids with read access")
         logger.info(ids)
         return ids
+
+    def _check_parent_permission(self, model, field, parent_id):
+        # Get the Parent object
+        logger.info("Check Parent Permission")
+        logger.info(field)
+        logger.info(parent_id)
+
+        parent_model = model._meta.get_field(field).related_model
+        parent_obj = get_object_or_404(parent_model, pk=parent_id)
+        permission_object = getattr(parent_model, "PERMISSION_OBJECT", None)
+        if permission_object:
+            parent_obj = getattr(parent_obj, permission_object)
+            parent_model = parent_obj.__class__
+
+        perm = f"{parent_model._meta.app_label}.view_{parent_model._meta.model_name}"
+        logger.info(perm)
+        perms = self.request.user.get_all_permissions(parent_obj)
+        logger.info(perms)
+
+        if not self.request.user.has_perm(perm, parent_obj):
+            logger.warning("No access to parent object")
+            raise PermissionDenied("No access to parent object")

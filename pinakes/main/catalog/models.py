@@ -81,6 +81,7 @@ class PortfolioItem(ImageableModel, UserOwnedModel):
     KEYCLOAK_TYPE = "catalog:portfolio"
     KEYCLOAK_ACTIONS = ["read", "update", "delete", "order"]
     KEYCLOAK_PARENT_FIELD = "portfolio_id"
+    PERMISSION_OBJECT = "portfolio"
 
     favorite = models.BooleanField(
         default=False, help_text="Definition of a favorite portfolio item"
@@ -550,9 +551,6 @@ class ApprovalRequest(BaseModel):
 
 class ServicePlan(BaseModel):
     """Service Plan Model"""
-
-    KEYCLOAK_TYPE = "catalog:portfolio"
-    KEYCLOAK_ACTIONS = ["read", "partial_update", "reset"]
 
     name = models.CharField(
         max_length=255,

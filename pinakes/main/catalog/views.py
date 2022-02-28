@@ -689,7 +689,7 @@ class ServicePlanViewSet(
     queryset = ServicePlan.objects.all()
     serializer_class = ServicePlanSerializer
     http_method_names = ["get", "patch", "post", "head"]
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticated, ServicePlanPermissions)
     filter_backends = []  # no filtering is needed
     parent_field_names = ("portfolio_item",)
 
