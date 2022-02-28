@@ -9,6 +9,7 @@ logger = logging.getLogger("catalog")
 
 class PortfolioPermissions(DjangoModelPermissions):
     """PortfolioPermission Class"""
+
     perms_map = {
         "list": ["%(app_label)s.view_%(model_name)s"],
         "retrieve": ["%(app_label)s.view_%(model_name)s"],
@@ -75,6 +76,7 @@ class PortfolioPermissions(DjangoModelPermissions):
 
 class PortfolioItemPermissions(DjangoModelPermissions):
     """PortfolioItemPermissions class models permissions for portfolio item"""
+
     perms_map = {
         "list": ["%(app_label)s.view_%(model_name)s"],
         "retrieve": ["%(app_label)s.view_%(model_name)s"],
@@ -131,7 +133,9 @@ class PortfolioItemPermissions(DjangoModelPermissions):
         """Check a single objects permission"""
         permission_object = obj.portfolio
         _clear_perm_cache(request.user)
-        perms = self.get_required_object_permissions(view.action, permission_object.__class__)
+        perms = self.get_required_object_permissions(
+            view.action, permission_object.__class__
+        )
         return request.user.has_perm(perms[0], permission_object)
 
 
@@ -172,7 +176,9 @@ class ServicePlanPermissions(DjangoModelPermissions):
         permission_object = obj.portfolio_item.portfolio
         _clear_perm_cache(request.user)
 
-        perms = self.get_required_object_permissions(view.action, permission_object.__class__)
+        perms = self.get_required_object_permissions(
+            view.action, permission_object.__class__
+        )
         return request.user.has_perm(perms[0], permission_object)
 
 
